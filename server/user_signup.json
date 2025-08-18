@@ -1,0 +1,86 @@
+{
+    "signup@gmail.com": {
+        "name": "anuuj",
+        "email": "signup@gmail.com",
+        "aadhar": "1784 4587 9012",
+        "house_number": "B2",
+        "ward_number": 15,
+        "area": "rajandr Nagar, Indore",
+        "pincode": 452009
+    },
+    "signup01@gmail.com": {
+        "name": "anuuj",
+        "email": "signup01@gmail.com",
+        "aadhar": "1784 4587 9012",
+        "house_number": "B2",
+        "ward_number": 15,
+        "area": "rajandr Nagar, Indore",
+        "pincode": 452009
+    },
+    "abcd4578@gmail.com": {
+        "name": "Aaabhay",
+        "email": "abcd4578@gmail.com",
+        "aadhar": "1234 4576 9012",
+        "house_number": "A12",
+        "ward_number": 2,
+        "area": "Sudama Nagar, Indore",
+        "pincode": 452001,
+        "phone_number": 7854573145
+    },
+    "abcd@gmail.com": {
+        "name": "Abhay",
+        "email": "abcd@gmail.com",
+        "aadhar": "1234 5678 9012",
+        "house_number": "A12",
+        "ward_number": 2,
+        "area": "Sudama Nagar, Indore",
+        "pincode": 452001,
+        "phone_number": 7854623145,
+        "password": "$2b$12$ktMArCtS6hH0PhYsaGGKzuEIFZXH5xYwp6.WyUfU6Tn.t6QMp8Xsa"
+    },
+    "devanshu@gmail.com": {
+        "name": "devanshu",
+        "email": "devanshu@gmail.com",
+        "aadhar": "4234 5678 9012",
+        "house_number": "de12",
+        "ward_number": 16,
+        "area": "shri Nagar , Indore ",
+        "pincode": 452009,
+        "phone_number": 7457823145,
+        "password": "$2b$12$yqNr1ZiP1KVXjzP41ozTeuB.GNT/iEqPgPnWBuIHnB7dvv.UJItZW"
+    },
+    "abcdef@gmail.com": {
+        "name": "devanshu",
+        "email": "abcdef@gmail.com",
+        "aadhar": "1234 7894 5623",
+        "house_number": "A12",
+        "ward_number": 2,
+        "area": "Sudama Nagar , Indore ",
+        "pincode": 452001,
+        "phone_number": 9406668352,
+        "password": "$2b$12$UEm0K40sHwueCMysSMQdpuqAtyu5pGM9egqTRFczInZ29WlzrHVim"
+    },
+    "abcd4567@gmail.com": {
+        "name": "Abhay",
+        "email": "abcd4567@gmail.com",
+        "aadhar": "1234 5678 9012",
+        "house_number": "A12",
+        "ward_number": 2,
+        "area": "Sudama Nagar , Indore ",
+        "pincode": 452002,
+        "phone_number": 7854623145,
+        "password": "$2b$12$.nkqBkx27q.f0/au16qIwOACPPMCF0Vxopy8UMavHkVUFiZhG3f4W",
+        "re_password": "string"
+    },
+    "dkothari960@gmail.com": {
+        "name": "devanshu",
+        "email": "dkothari960@gmail.com",
+        "aadhar": "1234 5678 1092",
+        "house_number": "A12",
+        "ward_number": 2,
+        "area": "Sudama Nagar , Indore ",
+        "pincode": 452001,
+        "phone_number": 7854612345,
+        "password": "$2b$12$Q2X/gM.SSOXR0QtHhHXLGOmicDU4a65QFd1E5hJgBbmOeiDO6HPDO"
+    }
+}

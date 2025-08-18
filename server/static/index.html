@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="p-6 flex items-center justify-center min-h-screen">
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+    </div>
+
+    <div class="container mx-auto bg-white p-8 rounded-xl shadow-lg">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">File a Complaint</h1>
+        <form id="complaintForm" class="space-y-6">
+
+            <!-- Title and Description -->
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Complaint Title</label>
+                <input type="text" id="title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3">
+            </div>
+
+            <div>
+                <label for="complain_description" class="block text-sm font-medium text-gray-700">Complaint Description</label>
+                <textarea id="complain_description" name="complain_description" rows="4" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3"></textarea>
+            </div>
+
+            <!-- Name and Email -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Your Name</label>
+                    <input type="text" id="name" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input type="email" id="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3">
+                </div>
+            </div>
+
+            <!-- Phone Number and Gender -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3">
+                </div>
+                <div>
+                    <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                    <select id="gender" name="gender" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Address and Aadhar Card -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="address">Address</label>
+                    <input type="text" id="address" name="address" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3">
+                </div>
+                <div>
+                    <label for="aadhar_card" class="block text-sm font-medium text-gray-700">Aadhar Card Number</label>
+                    <input type="text" id="aadhar_card" name="aadhar_card" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3">
+                </div>
+                <div>
+                    <label for="age" class="block text-sm font-medium text-gray-700">Age</label>
+                    <input type="number" id="age" name="age" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3">
+                </div>
+            </div>
+
+            <!-- Photo Upload Field -->
+            <div>
+                <label for="photo_upload" class="block text-sm font-medium text-gray-700">Upload Photos (Optional)</label>
+                <input type="file" id="photo_upload" name="photo_upload" accept="image/*" multiple class="mt-1 block w-full text-gray-900 border border-gray-300 rounded-md p-3 cursor-pointer file:rounded-full file:border-0 file:p-2 file:bg-gray-200 file:text-gray-700 file:mr-4">
+            </div>
+
+            <button type="submit" class="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-lg hover:bg-blue-700 transition duration-300">
+                Submit Complaint
+            </button>
+        </form>
+    </div>
+
+    <!-- Message Box -->
+    <div id="messageBox" class="fixed top-5 right-5 p-4 rounded-lg text-white font-bold hidden transition-opacity duration-300" role="alert"></div>
+
+    <script src="main.js"></script>
+</body>
+</html>

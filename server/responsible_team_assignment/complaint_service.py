@@ -1,0 +1,85 @@
+# FILE: server/app/services/complaint_service.py
+# This service now includes integrated SMS and WhatsApp notifications.
+
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+from datetime import datetime, timedelta
+
+from . import models
+from . import schemas
+from . import triage_engine
+from .triage_engine import triage_engine
+# Step 1: Add the new import for the notification functions
+from .notification_service import send_sms_notification, send_whatsapp_notification
+
+def create_new_complaint(complaint: schemas.ComplaintCreate, db: Session):
+    """
+    Handles the full logic of creating, classifying, assigning a complaint,
+    and now, sending notifications.
+    """
+    # --- Existing, unchanged logic ---
+    user = db.query(models.User).filter(models.User.mobile_number == complaint.user_mobile).first()
+    if not user:
+        user = models.User(name=complaint.user_name, mobile_number=complaint.user_mobile)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    predicted_dept_name = triage_engine.predict(complaint.description)
+    print(f"Predicted department: {predicted_dept_name}")
+    department = db.query(models.Department).filter(models.Department.name == predicted_dept_name).first()
+    if not department:
+        raise HTTPException(status_code=404, detail=f"Predicted department '{predicted_dept_name}' not found.")
+
+    department_id = department.department_id
+    assignment = db.query(models.JurisdictionalMatrix).filter(
+        models.JurisdictionalMatrix.ward_no == complaint.ward_no,
+        models.JurisdictionalMatrix.department_id == department_id
+    ).first()
+
+    if not assignment:
+        raise HTTPException(status_code=404, detail=f"No officer for '{predicted_dept_name}' in Ward {complaint.ward_no}.")
+    
+    assigned_officer_id = assignment.officer_id
+    sla_deadline = datetime.utcnow() + timedelta(hours=department.sla_hours)
+
+    new_complaint = models.Complaint(
+        user_id=user.user_id,
+        department_id=department_id,
+        assigned_officer_id=assigned_officer_id,
+        description=complaint.description,
+        address=complaint.address,
+        ward_no=complaint.ward_no,
+        status="Assigned",
+        sla_deadline=sla_deadline
+    )
+    db.add(new_complaint)
+    db.commit()
+    db.refresh(new_complaint)
+
+    log_entry = models.ComplaintLog(
+        complaint_id=new_complaint.complaint_id,
+        action_taken=f"Complaint assigned to officer {assigned_officer_id}"
+    )
+    db.add(log_entry)
+    db.commit()
+
+    # --- NEW NOTIFICATION LOGIC ---
+    # Step 2: Get the assigned officer's details to find their mobile number
+    assigned_officer = db.query(models.Officer).filter(models.Officer.officer_id == assigned_officer_id).first()
+
+    # Step 3: Send notifications
+    if assigned_officer:
+        # Notify the citizen via SMS
+        citizen_message = f"Your complaint has been lodged with Indore Samadhan. Your tracking ID is {new_complaint.complaint_id}. We will keep you updated."
+        send_sms_notification(to_number=user.mobile_number, message=citizen_message)
+
+        # Notify the officer via WhatsApp
+        officer_message = f"New Complaint Assigned:\nID: {new_complaint.complaint_id}\nWard: {new_complaint.ward_no}\nDesc: {new_complaint.description}\nSLA: {department.sla_hours} hours."
+        print(f"Sending WhatsApp notification to officer {assigned_officer_id} at {assigned_officer.mobile_number}")
+        # send_whatsapp_notification(to_number=assigned_officer.mobile_number, message=officer_message)
+        send_whatsapp_notification(to_number="7999639613", message=officer_message)
+    else:
+        print(f"WARNING: Could not find officer with ID {assigned_officer_id} to send notification.")
+
+    return new_complaint

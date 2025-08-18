@@ -1,0 +1,87 @@
+{
+    "abcd1245@gmail.com": {
+        "name": "Abhay",
+        "email": "abcd1245@gmail.com",
+        "aadhar": "1234 4568 9012",
+        "house_number": "A412",
+        "ward_number": 20,
+        "area": "Sudamaa Nagar , Indore ",
+        "pincode": 452004,
+        "phone_number": 4578923145,
+        "sector": "Public Department",
+        "password": "$2b$12$HMCfFaHTMLGbtdSnUbUMYOdKbpNE1It2umkn.CnDA/KRnR1U6h34e"
+    },
+    "abcd4695@gmail.com": {
+        "name": "annu",
+        "email": "abcd4695@gmail.com",
+        "aadhar": "1234 5678 9012",
+        "house_number": "A4612",
+        "ward_number": 20,
+        "area": "Sudamaa Nagar , Indore ",
+        "pincode": 452001,
+        "phone_number": 7854689535,
+        "sector": "Public Department",
+        "password": "$2b$12$MlRnv96oWu1fmUJ.waZFo.r49xw1FCovx0aQkcD88CpVSIS.wGGuq"
+    },
+    "abcd@gmail.com": {
+        "name": "Abhay",
+        "email": "abcd@gmail.com",
+        "aadhar": "1234 5678 9012",
+        "house_number": "A12",
+        "ward_number": 2,
+        "area": "Sudama Nagar , Indore ",
+        "pincode": 452001,
+        "phone_number": 7854623145,
+        "sector": "Public Department",
+        "password": "$2b$12$s3qcF0F7egtqz7J.XGB0xON0VKccoSWG4zVhjTMXQo7M9OqSAu62G"
+    },
+    "abcd142@gmail.com": {
+        "name": "Abhay",
+        "email": "abcd142@gmail.com",
+        "aadhar": "1234 5678 9122",
+        "house_number": "A12",
+        "ward_number": 2,
+        "area": "Sudama Nagar , Indore ",
+        "pincode": 452001,
+        "phone_number": 7854632145,
+        "sector": "Public Department",
+        "password": "$2b$12$.W4gYOA2Ei3Y5Z5Fa16r1uW4zhOsYhzbBNGTmeeaMiStaJ6soioKi"
+    },
+    "dkothari960@gmail.com": {
+        "name": "Abhay",
+        "email": "dkothari960@gmail.com",
+        "aadhar": "1234 5678 9012",
+        "house_number": "A12",
+        "ward_number": 2,
+        "area": "Sudama Nagar , Indore ",
+        "pincode": 452001,
+        "phone_number": 7854623145,
+        "sector": "Public Department",
+        "password": "$2b$12$oeGttfHz5HLc9R3.23zeQOrTsCwGfQUEiOaPffLerJ6FxDhUu4eI6",
+        "re_password": "string"
+    },
+    "ayushprajapat059@gmail.com": {
+        "name": "Ayush prajapat",
+        "email": "ayushprajapat059@gmail.com",
+        "aadhar": "909390939093",
+        "house_number": "B67",
+        "ward_number": 12,
+        "area": "Saket Dham",
+        "pincode": 452015,
+        "phone_number": 7247654434,
+        "sector": "Fire Department",
+        "password": "$2b$12$9XqrIjRUCnfUcL73VfEXuO6j1ZW.zQvCn74R9Ye6w.3o9GwufyMaK"
+    },
+    "chetanpatidarrrrr@gmail.com": {
+        "name": "Chetan Patidar",
+        "email": "chetanpatidarrrrr@gmail.com",
+        "aadhar": "564343234566",
+        "house_number": "B67",
+        "ward_number": 12,
+        "area": "Lotus Park aurbindo",
+        "pincode": 452005,
+        "phone_number": 9567897987,
+        "sector": "Electrical & Mechanical Department",
+        "password": "$2b$12$GwhnYD25EwPrAohTVYYEZevYoNsxdzlpJn.WXOeiGAagTSI0Usu7m"
+    }
+}
