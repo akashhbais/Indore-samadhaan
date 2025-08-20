@@ -1,21 +1,23 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { AppProvider, useAppContext } from '../context/AppContext'
 import CitizenNavbar from '../components/CitizenNavbar';
 import CitizenFooter from '../components/CitizenFooter';
+import { useNavigate } from 'react-router-dom';
 
 const CitizenProfile = () => {
     const { backendUrl } = useAppContext(AppProvider);
-    const user = {
-        name: "John Doe",
-        email: "john.doe@example.com",
-        phone: "123-456-7890",
-        address: {
-            street: "123 Main St",
-            city: "Anytown",
-            state: "CA",
-            zip: "12345"
-        }
-    };
+    const navigate = useNavigate();
+    const user=JSON.parse(localStorage.getItem("user"));
+
+    const handleLogout =()=>{
+        navigate("/");
+        localStorage.removeItem("user");
+
+    }
+
+   useEffect(()=>{
+    console.log(user);
+   },[])
 
     return (
         <>
@@ -37,18 +39,18 @@ const CitizenProfile = () => {
                     {/* Personal Details */}
                     <div className="mb-6">
                         <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Personal Details</h3>
-                        <p className="text-gray-700"><span className="font-medium">Phone:</span> {user.phone}</p>
+                        <p className="text-gray-700"><span className="font-medium">Phone:</span> {user.phone_number}</p>
                         <p className="text-gray-700"><span className="font-medium">Email:</span> {user.email}</p>
                     </div>
 
                     {/* Address Details */}
                     <div className="mb-6">
                         <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Address</h3>
-                        <p className="text-gray-700"><span className="font-medium">Street:</span> {user.address.street}</p>
-                        <p className="text-gray-700"><span className="font-medium">City:</span> {user.address.city}</p>
-                        <p className="text-gray-700"><span className="font-medium">State:</span> {user.address.state}</p>
-                        <p className="text-gray-700"><span className="font-medium">Zip:</span> {user.address.zip}</p>
+                        <span>{user.house_number}, {user.area}, {user.pincode}</span>
+                        <p className='text-lg font-semibold text-gray-800 mb-3 border-b pb-2'>Ward No : {user.ward_number}</p>
                     </div>
+
+                   
 
                     {/* Buttons */}
                     <div className="flex justify-between gap-4">
@@ -58,6 +60,9 @@ const CitizenProfile = () => {
                         <button className="w-1/2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md transition">
                             Update Profile
                         </button>
+                    </div>
+                    <div className='flex justify-center mt-4'>
+                        <button onClick={handleLogout} className='w-1/2 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg shadow-md transition'>Logout</button>
                     </div>
                 </div>
             </div>

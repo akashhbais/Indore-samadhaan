@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 
 from . import models
-from ..database.database import SessionLocal # Import SessionLocal to create a new session
+from database.database import SessionLocal # Import SessionLocal to create a new session
 from .notification_service import send_sms_notification, send_whatsapp_notification
 
 def process_overdue_complaints():
@@ -39,20 +39,20 @@ def process_overdue_complaints():
                 db.add(log_entry)
                 
                 new_officer = db.query(models.Officer).filter(models.Officer.officer_id == new_officer_id).first()
-                citizen = db.query(models.User).filter(models.User.user_id == complaint.user_id).first()
+                citizen = db.query(models.Citizen).filter(models.Citizen.email == complaint.email).first()
 
                 if new_officer and citizen:
                     officer_message = (
                         f"Escalated Complaint Assigned:\nID: {complaint.complaint_id}\n"
                         f"Desc: {complaint.description}"
                     )
-                    send_whatsapp_notification(to_number=new_officer.mobile_number, message=officer_message)
+                    send_sms_notification(to_number=new_officer.mobile_number, message=officer_message)
 
                     citizen_message = (
                         f"Update on Complaint ID {complaint.complaint_id}: "
                         f"Your issue has been escalated to a superior officer for action."
                     )
-                    send_sms_notification(to_number=citizen.mobile_number, message=citizen_message)
+                    send_sms_notification(to_number=citizen.phone_number, message=citizen_message)
 
                 print(f"Escalated complaint {complaint.complaint_id} to {new_officer_id}")
                 escalated_count += 1

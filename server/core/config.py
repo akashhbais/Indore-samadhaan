@@ -1,10 +1,9 @@
-import os
-from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
 
-# Load environment variables from a.env file
-load_dotenv()
+DATABASE_URL = "postgresql://neondb_owner:npg_8WXekF1PzhTi@ep-plain-sound-aejk2y07-pooler.c-2.us-east-2.aws.neon.tech/indoresamadhan?sslmode=require&channel_binding=require"
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
 
-if not DATABASE_URL:
-    raise ValueError("No DATABASE_URL set for the application")
+with engine.connect() as conn:
+    result = conn.execute(text("SELECT now();"))
+    print(result.fetchone())

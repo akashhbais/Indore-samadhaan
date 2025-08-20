@@ -2,3 +2,4 @@ myenv
 __pycache__
 triage_engine/
 .env
+venv

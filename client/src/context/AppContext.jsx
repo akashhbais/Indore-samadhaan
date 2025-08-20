@@ -6,10 +6,10 @@ export const useAppContext = () => {
 }
 
 export const AppProvider = ({ children }) => {
-    const [isUser , setIsUser] = useState(true);
+    const [isUser , setIsUser] = useState(false);
     const [admin , setAdmin] = useState(null);
     const [user,setUser]=useState(null);
-    const [isAdmin , setIsAdmin]=useState(true);
+    const [isAdmin , setIsAdmin]=useState(false);
 
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL;

@@ -15,10 +15,16 @@ import SeeComplaints from './citizen/SeeComplaints.jsx'
 import AdminDashboard from './Admin/dashboard.jsx';
 import { ToastContainer } from "react-toastify";
 import CitizenProfile from './citizen/CitizenProfile.jsx';
-
+import SeeMyComplaints from './Admin/SeeMyComplaints.jsx';
+import Profile from './Admin/profile.jsx';
+import DepartmentsTable from './Admin/DepartmentTable.jsx';
 function App() {
-  const [isAdmin, setIsAdmin] = useState(true);
-  const {isUser} = useAppContext(AppProvider);
+  const {isAdmin} = useAppContext(AppProvider);
+  // const {isUser} = useAppContext(AppProvider);
+  const user = localStorage.getItem("user");
+  const isUser = user ? true : false;
+
+
   return (
     <>
       <ToastContainer />
@@ -26,21 +32,26 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/contact" element={<Contact />} />
         <Route path='/about' element={<About/>}/>
+
+
         <Route path="/login" element={<CitizenLogin />} />
         <Route path="/signup" element={<CitizenSignup />} />
-        <Route path='citizen' element={isUser ? <CitizenHomepage/> : <CitizenLogin/>}/>
-        <Route path="/grievance" element={<GrievanceForm />} />
-        <Route path='/see-complaints' element={<SeeComplaints/>}/>
-        <Route path='/admin' element={<AdminDashboard/>}/>
-        <Route path='/admin/signup' element={<AdminSignup/>}/>
-
         <Route path="/citizen" element={isUser ? <CitizenHomepage/> : <CitizenLogin/>}/>
         <Route path="/citizen/grievance" element={<GrievanceForm />} />
         <Route path="/citizen/complaints" element={<SeeComplaints />} />
         <Route path='/citizen/profile' element={<CitizenProfile/>}/>
+
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/signup" element={<AdminSignup />} />
+        <Route path="/admin" element={isAdmin ? <AdminDashboard/> : <AdminLogin/>}/>
+        <Route path='/admin/complaints' element={<SeeMyComplaints/>}/>
+        <Route path='/admin/profile' element={<Profile/>}/>
+        <Route path='/admin/departments' element={<DepartmentsTable/>}/>
+
       </Routes>
     </>
   )
 }
 
 export default App;
+

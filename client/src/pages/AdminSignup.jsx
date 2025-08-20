@@ -29,11 +29,7 @@ const AdminSignup = () => {
   const handleNext = (e) => {
     e.preventDefault();
     if (step === 1) {
-      if (formData.name && formData.email && formData.aadhar && formData.house_number && formData.ward_number && formData.area && formData.pincode && formData.phone_number && formData.sector) {
-        setStep(2);
-      } else {
-        alert('Please fill all the fields');
-      }
+      setStep(2);
     } else if (step === 2) {
       if (formData.password && formData.re_password) {
         if (formData.password === formData.re_password) {
@@ -49,19 +45,19 @@ const AdminSignup = () => {
 
   const AdminSignupRequest = async () => {
     try {
-      const payload = {
-        name: formData.name,
-        email: formData.email,
-        aadhar: formData.aadhar,
-        house_number: formData.house_number,
-        ward_number: parseInt(formData.ward_number),
-        area: formData.area,
-        pincode: parseInt(formData.pincode),
-        phone_number: parseInt(formData.phone_number),
-        sector: formData.sector,
-        password: formData.password,
-        re_password: formData.re_password
-      };
+     const payload = {
+  name: formData.name,
+  email: formData.email,
+  aadhar: String(formData.aadhar),
+  house_number: "0",
+  ward_number: 10,
+  area: " ",
+  pincode: 452001,
+  phone_number: String(formData.phone_number),
+  sector: 'Water & Drainage / Sewerage Department',
+  password: formData.password,
+  re_password: formData.re_password
+};
       const { data } = await axios.post(`${backendUrl}/admin/request-signup-otp`, payload);
 
       if (data) {
@@ -94,9 +90,9 @@ const AdminSignup = () => {
         headers: { 'Content-Type': 'application/json' }
       });
       if (data) {
-        setIsAdmin(true);
-        setAdmin(data.data);
-        navigate('/admin/dashboard');
+       localStorage.setItem("admin", JSON.stringify(data.data));
+       setIsAdmin(true);
+        navigate('/admin');
         console.log("OTP verified:", data);
       } else {
         alert("Invalid OTP. Please try again.");
@@ -174,7 +170,7 @@ const AdminSignup = () => {
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="block mb-1 font-medium">House Number</label>
                       <input
                         type="text"
@@ -184,11 +180,11 @@ const AdminSignup = () => {
                         required
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
-                    </div>
+                    </div> */}
                   </div>
     
                   {/* Ward No, Area, Pincode */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
                       <label className="block mb-1 font-medium">Ward Number</label>
                       <input
@@ -224,10 +220,10 @@ const AdminSignup = () => {
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Deoartment */}
-                  <div className="col-span-2">
+                  {/* <div className="col-span-2">
                 <label className="block mb-1 font-medium">Sector</label>
                 <select name="sector" value={formData.sector} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required>
                   <option value="">Select Sector</option>
@@ -242,7 +238,7 @@ const AdminSignup = () => {
                   <option value="Housing & Environmental Department / Colony Cell">Housing & Environmental Department / Colony Cell</option>
                   <option value="Fire Department">Fire Department</option>
                 </select>
-              </div>
+              </div> */}
     
                   {/* Phone */}
                   <div className="mb-8">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import { User, MessageCircle, BarChart3, FileText, Bell, Search, Phone, Mail, MapPin, Calendar, Clock, CheckCircle, AlertCircle, XCircle, Send, Star, ThumbsUp } from 'lucide-react';
 import CitizenNavbar from '../components/CitizenNavbar'
 import { AppProvider, useAppContext } from '../context/AppContext';
@@ -9,27 +9,54 @@ import { toast } from 'react-toastify'
 
 const Dashboard = () => {
 
-  const { user, latestNews, backendUrl } = useAppContext(AppProvider);
+  const {latestNews, backendUrl } = useAppContext(AppProvider);
+
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const [complaints, setComplaints] = useState(0);
   const [grievances, setGrievances] = useState([]);
   const [reviews, setReviews] = useState([]);
 
-  const getUserComplaints = async () => {
+  const getComplaints = async () => {
+   const useremail = user.email;
     try {
-
-      const response = await axios.get(`${backendUrl}/complaints/${user._id}`);
-      if (response.data.complaints) {
-        setGrievances(response.data.complaints),
-          setComplaints(response.data.complaints.length);
+         console.log(useremail);
+      if (!user) {
+        toast.error("User not found");
+        return;
+      }
+      const response = await axios.get(
+        `${backendUrl}/complaints/${useremail}`
+      );
+      console.log(response);
+      if (response.data) {
+        console.log(response.data.length);
+        setComplaints(response.data.length);
       } else {
-        toast.error("No complaint found")
+        toast.error("No complaints found");
+      }
+    } catch (error) {
+      toast.error("Error fetching complaints");
+    }
+  };
+
+  const getGrievances = async (id) => {
+    const useremail = user.email
+    try{
+       const response = await axios.get(`${backendUrl}/complaints/`, {
+          params: { email: useremail }  
+        });
+      if(response.data){
+        setGrievances(response.data);
+      }else{
+        toast.error("No grievances found");
       }
 
-    } catch (error) {
-      toast.error("error fetching complaints");
+    }catch(error){
+      toast.error("No Complaint found");
     }
   }
+ 
   const getStatusColor = (status) => {
     switch (status) {
       case "Lodged":
@@ -60,32 +87,8 @@ const Dashboard = () => {
     }
   };
   useEffect(()=>{
-    setGrievances([
-      {
-  "id": 12,
-  "title": "Garbage not collected",
-  "description": "Garbage not collected from Sector 5",
-  "status": "In Progress",
-  "date": "2025-08-10T12:00:00Z",
-  "expectedCompletion": "2025-08-20T12:00:00Z",
-  "handler": "Mr. Sharma",
-  "dept": "Sanitation",
-  "logs": [
-    {
-      "log_id": 1,
-      "action_taken": "Complaint registered",
-      "notes": "Initial submission",
-      "timestamp": "2025-08-10T12:05:00Z"
-    },
-    {
-      "log_id": 2,
-      "action_taken": "Assigned to sanitation worker",
-      "notes": "Worker ID: 123",
-      "timestamp": "2025-08-11T09:00:00Z"
-    }
-  ]
-}
-    ])
+    getComplaints()
+    getGrievances(1);
   },[])
   return (
     <>
@@ -100,7 +103,7 @@ const Dashboard = () => {
 
         <div className="container mx-auto px-5 relative z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">
-            Welcome back!
+            Welcome back! {user.name}
           </h1>
           <p className="text-xl text-blue-200 mb-8">
             Track your grievances, stay updated with your area statistics, and access all municipal services
@@ -149,75 +152,124 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Tracking Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 transition-all duration-300 hover:shadow-xl">
-          <h3 className="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-3">
-            <FileText className="w-6 h-6" />
-            Track Your Grievances
-          </h3>
+       {/* Tracking Section */}
+<div className="bg-white rounded-2xl shadow-lg p-6 mb-8 transition-all duration-300 hover:shadow-xl">
+  <h3 className="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-3">
+    <FileText className="w-6 h-6" />
+    Track Your Grievances
+  </h3>
 
-          <div className="space-y-6">
-            {grievances && grievances.map((complaint) => (
-              <div key={complaint.id} className="border border-gray-200 rounded-xl p-6 transition-all duration-300 hover:border-blue-300 hover:shadow-md">
+  <div className="space-y-6">
+    {grievances && grievances.length > 0 ? (
+      grievances.map((complaint) => (
+        <div
+          key={complaint.complaint_id}
+          className="border border-gray-200 rounded-xl p-6 transition-all duration-300 hover:border-blue-300 hover:shadow-md"
+        >
+          {/* Complaint Header */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h4 className="font-bold text-gray-900">
+                  Complaint #{complaint.complaint_id}
+                </h4>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                    complaint.status
+                  )}`}
+                >
+                  {getStatusIcon(complaint.status)}
+                  <span className="ml-1">{complaint.status}</span>
+                </span>
+              </div>
 
-                {/* Complaint Header */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-bold text-gray-900">{complaint.title}</h4>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(complaint.status)}`}>
-                        {getStatusIcon(complaint.status)}
-                        <span className="ml-1">{complaint.status}</span>
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">{complaint.description}</p>
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      <span className="text-gray-600">ID: <span className="font-medium text-blue-600">{complaint.id}</span></span>
-                      <span className="text-gray-600">Filed: <span className="font-medium">{new Date(complaint.date).toLocaleDateString()}</span></span>
-                      <span className="text-gray-600">Expected: <span className="font-medium text-green-600">{new Date(complaint.expectedCompletion).toLocaleDateString()}</span></span>
-                    </div>
-                  </div>
-                </div>
+              <p className="text-sm text-gray-600 mb-3">{complaint.description}</p>
 
-                {/* Complaint Logs Timeline */}
-                <div className="relative border-l-2 border-blue-200 pl-6 space-y-6">
-                  {complaint.logs && complaint.logs.length > 0 ? (
-                    complaint.logs.map((log) => (
-                      <div key={log.log_id} className="relative">
-                        <span className="absolute -left-3 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4" />
-                        </span>
-                        <div className="bg-blue-50 rounded-lg p-4 shadow-sm">
-                          <h5 className="font-semibold text-blue-900">{log.action_taken}</h5>
-                          {log.notes && <p className="text-sm text-gray-700 mt-1">{log.notes}</p>}
-                          <span className="text-xs text-gray-500">{new Date(log.timestamp).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm">No activity logs available yet.</p>
-                  )}
-                </div>
-
-                {/* Rating if resolved */}
-                {complaint.status === 'Resolved' && (
-                  <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex items-center justify-between">
-                      <span className="text-green-800 font-medium">Please rate your experience:</span>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <button key={star} className="text-yellow-400 hover:text-yellow-500 transition-colors">
-                            <Star className="w-5 h-5" />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <span className="text-gray-600">
+                  Ward:{" "}
+                  <span className="font-medium text-blue-600">
+                    {complaint.ward_no}
+                  </span>
+                </span>
+                <span className="text-gray-600">
+                  Filed:{" "}
+                  <span className="font-medium">
+                    {new Date(complaint.created_at).toLocaleDateString()}
+                  </span>
+                </span>
+                {complaint.sla_deadline && (
+                  <span className="text-gray-600">
+                    SLA Deadline:{" "}
+                    <span className="font-medium text-green-600">
+                      {new Date(complaint.sla_deadline).toLocaleDateString()}
+                    </span>
+                  </span>
+                )}
+                {complaint.resolved_at && (
+                  <span className="text-gray-600">
+                    Resolved:{" "}
+                    <span className="font-medium text-green-600">
+                      {new Date(complaint.resolved_at).toLocaleDateString()}
+                    </span>
+                  </span>
                 )}
               </div>
-            ))}
+            </div>
           </div>
+
+          {/* Logs Timeline (optional if you add logs later) */}
+          {complaint.logs && complaint.logs.length > 0 && (
+            <div className="relative border-l-2 border-blue-200 pl-6 space-y-6">
+              {complaint.logs.map((log) => (
+                <div key={log.log_id} className="relative">
+                  <span className="absolute -left-3 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4" />
+                  </span>
+                  <div className="bg-blue-50 rounded-lg p-4 shadow-sm">
+                    <h5 className="font-semibold text-blue-900">
+                      {log.action_taken}
+                    </h5>
+                    {log.notes && (
+                      <p className="text-sm text-gray-700 mt-1">{log.notes}</p>
+                    )}
+                    <span className="text-xs text-gray-500">
+                      {new Date(log.timestamp).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Rating if resolved */}
+          {complaint.status.includes("Resolved") && (
+            <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center justify-between">
+                <span className="text-green-800 font-medium">
+                  Please rate your experience:
+                </span>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      className="text-yellow-400 hover:text-yellow-500 transition-colors"
+                    >
+                      <Star className="w-5 h-5" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+      ))
+    ) : (
+      <p className="text-gray-500 text-sm">No complaints found.</p>
+    )}
+  </div>
+</div>
+
 
 
         {/* News and Reviews Section */}

@@ -19,9 +19,10 @@ const AdminLogin = () => {
         password: form.password
       });
       if (data) {
+        console.log(data);
+        localStorage.setItem("admin", JSON.stringify(data.data));
         setIsAdmin(true);
-        setAdmin(data.data);
-        navigate("/admin/dashboard");
+        navigate("/admin");
       } else {
         console.log("error");
       }

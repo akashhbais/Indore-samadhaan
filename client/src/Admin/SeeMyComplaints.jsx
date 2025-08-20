@@ -1,55 +1,87 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import {
-  User,
-  FileText,
-  Phone,
-  Mail,
-  Star,
-} from "lucide-react";
-import CitizenFooter from "../components/CitizenFooter";
-import CitizenNavbar from "../components/CitizenNavbar";
-import { AppProvider, useAppContext } from "../context/AppContext";
+import { User, FileText, Phone, Mail, Star, Search } from "lucide-react";
+import AdminNavbar from "../components/AdminNavbar";
 
-const SeeComplaints = () => {
-  //const {user}=useAppContext(AppProvider);
+const SeeMyComplaints = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const [adminId, setAdminId] = useState("");
+  const [wardNo, setWardNo] = useState(""); // NEW: ward search
   const [complaints, setComplaints] = useState([]);
-  const user = localStorage.getItem("user");
-  const getComplaints = async () => {
-   const useremail = JSON.parse(user).email;
+  const [loading, setLoading] = useState(false);
+
+  const handleResolve = async (id) => {
     try {
-         console.log(useremail);
-      if (!user) {
-        toast.error("User not found");
-        return;
-      }
-      const response = await axios.get(
-        `${backendUrl}/complaints/${useremail}`
+      const response = await axios.post(
+        `${backendUrl}/officer/resolve_complaint/${id}`,
+        {
+          officer_id: adminId,
+          notes: `Complaint is resolved by ${adminId}`,
+        }
       );
-      console.log(response);
-      if (response.data) {
-        setComplaints(response.data);
+      if (response.data.success) {
+        toast.success(response.data.message || "Complaint resolved");
       } else {
-        toast.error("No complaints found");
+        toast.error("Something went wrong");
       }
     } catch (error) {
-      toast.error("Error fetching complaints");
+      toast.error("Error resolving complaint");
+    } finally {
+      getComplaints();
     }
   };
 
-    const getHead = (complaint)=>{
-    if(complaint === 0){
-                    return  "Zonal Office"
-                    }else if(complaint.escalation_level === 1){
-                    return  "Department Head"
-                    }else if(complaint.escalation_level === 2){
-                     return "Additional Commissioner "
-                    }else if(complaint.escalation_level === 3){
-                     return "Commissioner"
-                    }
-  }
+  const getComplaints = async () => {
+    if (!adminId) {
+      toast.error("Please enter Admin ID");
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${backendUrl}/complaints/admin/${adminId}`
+      );
+      if (response.data && response.data.length > 0) {
+        setComplaints(response.data);
+      } else {
+        toast.info("No complaints found for this Admin ID");
+        setComplaints([]);
+      }
+    } catch (error) {
+      toast.error("Error fetching complaints");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchComplaints = async () => {
+    if (!wardNo) {
+      toast.error("Please enter a ward number");
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await axios.get(`${backendUrl}/ward/${wardNo}`);
+      setComplaints(res.data);
+      if (res.data.length === 0) {
+        toast.info("No complaints found for this ward");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch complaints");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getHead = (level) => {
+    if (level === 0) return "Zonal Office";
+    if (level === 1) return "Department Head";
+    if (level === 2) return "Additional Commissioner";
+    if (level === 3) return "Commissioner";
+    return "Unknown";
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -57,7 +89,7 @@ const SeeComplaints = () => {
         return "bg-yellow-100 text-yellow-700";
       case "In Progress":
         return "bg-blue-100 text-blue-700";
-      case "Resolved":
+      case "Resolved - Awaiting Feedback":
         return "bg-green-100 text-green-700";
       case "Rejected":
         return "bg-red-100 text-red-700";
@@ -68,32 +100,59 @@ const SeeComplaints = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case "Lodged":
-        return "📄";
-      case "In Progress":
-        return "🔄";
-      case "Resolved":
-        return "✅";
-      case "Rejected":
-        return "❌";
       default:
-        return "ℹ️";
+        return " ";
     }
   };
 
-  useEffect(() => {
-    getComplaints();
-  }, []);
-
   return (
     <>
-      <CitizenNavbar />
+      <AdminNavbar />
       <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 mt-18 transition-all duration-300 hover:shadow-xl">
         <h3 className="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-3">
           <FileText className="w-6 h-6" />
-          See Complaints
+          Complaints
         </h3>
 
+        {/* Admin ID Input */}
+        <div className="flex gap-3 mb-4">
+          <input
+            type="text"
+            value={adminId}
+            onChange={(e) => setAdminId(e.target.value)}
+            placeholder="Enter Admin ID"
+            className="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+          <button
+            onClick={getComplaints}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            <Search className="w-4 h-4" />
+            {loading ? "Loading..." : "Fetch by Admin"}
+          </button>
+        </div>
+
+        {/* Ward No Input */}
+        <div className="flex gap-3 mb-6">
+          <input
+            type="number"
+            value={wardNo}
+            onChange={(e) => setWardNo(e.target.value)}
+            placeholder="Enter Ward Number"
+            className="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 outline-none"
+          />
+          <button
+            onClick={fetchComplaints}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+          >
+            <Search className="w-4 h-4" />
+            {loading ? "Loading..." : "Fetch by Ward"}
+          </button>
+        </div>
+
+        {/* Complaints List */}
         <div className="space-y-4">
           {complaints.map((complaint) => (
             <div
@@ -101,11 +160,10 @@ const SeeComplaints = () => {
               className="border border-gray-200 rounded-xl p-6 transition-all duration-300 hover:border-blue-300 hover:shadow-md"
             >
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                {/* Left Side */}
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-bold text-gray-900">
-                      Complaint #{complaint.complaint_id}
+                      Complaint {complaint.complaint_id}
                     </h4>
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
@@ -116,7 +174,7 @@ const SeeComplaints = () => {
                       <span className="ml-1">{complaint.status}</span>
                     </span>
                   </div>
-                  <p className="text-sm border border-black p-4 rounded-md text-gray-600 mb-3">
+                  <p className="text-sm text-black mb-3 border border-black rounded-lg p-4">
                     {complaint.description}
                   </p>
                   <div className="flex flex-wrap gap-4 text-sm">
@@ -157,12 +215,13 @@ const SeeComplaints = () => {
                       </span>
                     )}
                     <span className="text-gray-600">
-                     Complaint Level:{" "}
+                      Complaint Level:{" "}
                       <span className="font-medium text-red-500">
                         {getHead(complaint.escalation_level)}
                       </span>
                     </span>
                   </div>
+
                   {/* Complaint Images */}
                   {complaint.image_urls?.length > 0 && (
                     <div className="mt-4 flex gap-3 flex-wrap">
@@ -178,28 +237,20 @@ const SeeComplaints = () => {
                   )}
                 </div>
 
-                {/* Right Side - Officer Info */}
-                <div className="lg:w-64 bg-gray-50 rounded-lg p-4">
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-800 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <User className="w-6 h-6 text-white" />
-                    </div>
-                    <h5 className="font-semibold text-gray-900">
-                      Officer ID: {complaint.assigned_officer_id || "N/A"}
-                    </h5>
-                    <p className="text-sm text-gray-600">
-                      Department ID: {complaint.department_id}
-                    </p>
-                    <div className="flex justify-center gap-2 mt-3">
-                      <button className="p-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors">
-                        <Phone className="w-4 h-4 text-blue-600" />
-                      </button>
-                      <button className="p-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors">
-                        <Mail className="w-4 h-4 text-blue-600" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                {complaint.status === "Resolved - Awaiting Feedback" ? (
+                  <span className="text-green-500 font-medium">
+                    Already Resolved
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => {
+                      handleResolve(complaint.complaint_id);
+                    }}
+                    className="w-1/4 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md transition"
+                  >
+                    Mark as Resolve
+                  </button>
+                )}
               </div>
 
               {/* Feedback on Resolved Complaints */}
@@ -226,10 +277,8 @@ const SeeComplaints = () => {
           ))}
         </div>
       </div>
-
-      <CitizenFooter />
     </>
   );
 };
 
-export default SeeComplaints;
+export default SeeMyComplaints;

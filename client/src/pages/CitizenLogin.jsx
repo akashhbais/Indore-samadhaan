@@ -24,8 +24,8 @@ const CitizenLogin = () => {
       if(data){
         setIsUser(true);
         setUser(data.data);
-        navigate("/");
-        setUser
+        localStorage.setItem("user",JSON.stringify(data.data));
+        navigate("/citizen");
         console.log(data);
       }else{
         console.log("error");

@@ -41,4 +41,4 @@ class TriageEngine:
         predicted_class_name = self.id2label.get(predicted_class_id, "Miscellaneous / Out-of-Scope")
         
         return predicted_class_name
-triage_engine = TriageEngine(model_path="server/triage_engine")
+triage_engine = TriageEngine(model_path="./triage_engine/content/indore-grievance-classifier/triage_engine/")

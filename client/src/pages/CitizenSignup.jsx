@@ -46,7 +46,7 @@ const CitizenSignup = () => {
         password: form.password,
         re_password: form.re_password
       };
-      const { data } = await axios.post(`${backendUrl}/user/request-signup-oyp`, payload);
+      const { data } = await axios.post(`${backendUrl}/user/request-signup-otp`, payload);
 
       if (data) {
         setStep(3);
@@ -74,13 +74,17 @@ const CitizenSignup = () => {
         identifier: form.email,
         otp: otp.trim(),
       };
-      const { data } = await axios.post(`${backendUrl}/user/verify-signup-otp`, payload, {
+      const response = await axios.post(`${backendUrl}/user/verify-signup-otp`, payload, {
         headers: { 'Content-Type': 'application/json' }
       });
+      console.log(response);
+      console.log(response.data);
+      const data = response.data;
       if (data) {
         setIsUser(true);
         setUser(data.data);
-        navigate('/');
+        localStorage.setItem("user", JSON.stringify(data.data));
+        navigate('/citizen');
         console.log("OTP verified:", data);
       } else {
         alert("Invalid OTP. Please try again.");

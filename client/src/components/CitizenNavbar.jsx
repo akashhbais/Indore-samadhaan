@@ -61,7 +61,7 @@ const CitizenNavbar = () => {
             href="/citizen/complaints"
             className="no-underline text-gray-700 font-bold px-4 py-2 rounded-full transition-colors duration-300 hover:bg-blue-100 hover:text-blue-800"
           >
-            See Complaints
+            My Complaints
           </a>
         </li>
         <li>

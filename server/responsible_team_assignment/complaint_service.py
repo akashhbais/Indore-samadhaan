@@ -16,15 +16,28 @@ def create_new_complaint(complaint: schemas.ComplaintCreate, db: Session):
     """
     Handles the full logic of creating, classifying, assigning a complaint,
     and now, sending notifications.
+    Complaint.email → Citizen.email (FK relationship).
     """
-    # --- Existing, unchanged logic ---
-    user = db.query(models.User).filter(models.User.mobile_number == complaint.user_mobile).first()
-    if not user:
-        user = models.User(name=complaint.user_name, mobile_number=complaint.user_mobile)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
 
+    # --- Citizen lookup or creation ---
+    citizen = db.query(models.Citizen).filter(models.Citizen.email == complaint.email).first()
+    if not citizen:
+        citizen = models.Citizen(
+            email=complaint.email,
+            name=complaint.user_name,
+            phone_number=complaint.user_mobile,
+            aadhar=complaint.aadhar,
+            house_number=complaint.house_number,
+            ward_number=complaint.ward_no,
+            area=complaint.area,
+            pincode=complaint.pincode,
+            password=complaint.password  # ⚠️ should be hashed before saving!
+        )
+        db.add(citizen)
+        db.commit()
+        db.refresh(citizen)
+
+    # --- Department prediction ---
     predicted_dept_name = triage_engine.predict(complaint.description)
     print(f"Predicted department: {predicted_dept_name}")
     department = db.query(models.Department).filter(models.Department.name == predicted_dept_name).first()
@@ -39,12 +52,13 @@ def create_new_complaint(complaint: schemas.ComplaintCreate, db: Session):
 
     if not assignment:
         raise HTTPException(status_code=404, detail=f"No officer for '{predicted_dept_name}' in Ward {complaint.ward_no}.")
-    
+
     assigned_officer_id = assignment.officer_id
     sla_deadline = datetime.utcnow() + timedelta(hours=department.sla_hours)
 
+    # --- Create complaint ---
     new_complaint = models.Complaint(
-        user_id=user.user_id,
+        email=citizen.email,  # ✅ FK to Citizen
         department_id=department_id,
         assigned_officer_id=assigned_officer_id,
         description=complaint.description,
@@ -57,6 +71,7 @@ def create_new_complaint(complaint: schemas.ComplaintCreate, db: Session):
     db.commit()
     db.refresh(new_complaint)
 
+    # --- Log entry ---
     log_entry = models.ComplaintLog(
         complaint_id=new_complaint.complaint_id,
         action_taken=f"Complaint assigned to officer {assigned_officer_id}"
@@ -64,21 +79,18 @@ def create_new_complaint(complaint: schemas.ComplaintCreate, db: Session):
     db.add(log_entry)
     db.commit()
 
-    # --- NEW NOTIFICATION LOGIC ---
-    # Step 2: Get the assigned officer's details to find their mobile number
+    # --- Notifications ---
     assigned_officer = db.query(models.Officer).filter(models.Officer.officer_id == assigned_officer_id).first()
 
-    # Step 3: Send notifications
     if assigned_officer:
-        # Notify the citizen via SMS
+        # Notify citizen
         citizen_message = f"Your complaint has been lodged with Indore Samadhan. Your tracking ID is {new_complaint.complaint_id}. We will keep you updated."
-        send_sms_notification(to_number=user.mobile_number, message=citizen_message)
+        send_sms_notification(to_number=citizen.phone_number, message=citizen_message)
 
-        # Notify the officer via WhatsApp
+        # Notify officer
         officer_message = f"New Complaint Assigned:\nID: {new_complaint.complaint_id}\nWard: {new_complaint.ward_no}\nDesc: {new_complaint.description}\nSLA: {department.sla_hours} hours."
         print(f"Sending WhatsApp notification to officer {assigned_officer_id} at {assigned_officer.mobile_number}")
-        # send_whatsapp_notification(to_number=assigned_officer.mobile_number, message=officer_message)
-        send_whatsapp_notification(to_number="7999639613", message=officer_message)
+        send_whatsapp_notification(to_number=assigned_officer.mobile_number, message=officer_message)
     else:
         print(f"WARNING: Could not find officer with ID {assigned_officer_id} to send notification.")
 
