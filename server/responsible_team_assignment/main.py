@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import random
 from typing import Annotated, List
 from fastapi import Body, FastAPI, Depends, Query, HTTPException , status
+from fastapi.encoders import jsonable_encoder
 import requests
 from sqlalchemy.orm import Session
 from geopy.geocoders import Nominatim
@@ -9,8 +10,11 @@ from geopy.extra.rate_limiter import RateLimiter
 from fastapi_utils.tasks import repeat_every
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, To, From
-
+from . import escalation_service
 from responsible_team_assignment import notification_service
+from sqlalchemy.orm import Session
+from typing import Annotated
+from database.database import SessionLocal
 
 # from server.responsible_team_assignment.notification_service import send_sms_notification
 
@@ -181,14 +185,43 @@ def resolve_complaint_endpoint(complaint_id: int, body: schemas.ResolveComplaint
     """
     return resolve_service.resolve_complaint(complaint_id, body, db)
 
-@app.post("/feedback/{complaint_id}")
-def handle_citizen_feedback_endpoint(complaint_id: int, satisfied: Annotated[bool, Body(embed=True)], db: Session = Depends(get_db)):
-    """
-    API endpoint for citizens to provide feedback on a resolved complaint.
-    This now calls the dedicated feedback service to handle the logic.
-    """
-    return escalation_service.process_overdue_complaints(complaint_id, satisfied, db)
 
+@app.post("/feedback/{complaint_id}", response_model=dict)
+def handle_citizen_feedback_endpoint(
+    complaint_id: int,
+    satisfied: Annotated[bool, Body(embed=True)],
+    db: Session = Depends(get_db)
+):
+    """
+    API endpoint for citizens to provide feedback on a complaint.
+
+    Parameters:
+    - complaint_id (int): ID of the complaint.
+    - satisfied (bool): Whether the citizen is satisfied with the resolution.
+      If False, the complaint will be escalated automatically.
+    - db (Session): SQLAlchemy database session.
+
+    Returns:
+    - dict: Status message of the feedback processing.
+    """
+    # Ensure complaint exists
+    complaint = db.query(models.Complaint).filter(models.Complaint.complaint_id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Complaint with ID {complaint_id} not found."
+        )
+
+    # Process feedback
+    try:
+        result = escalation_service.handle_feedback(complaint_id, satisfied, db)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process feedback: {str(e)}"
+        )
+
+    return result
 
 @app.post('/user/request-signup-otp')
 def request_user_signup_otp(signup: SignUp, db: Session = Depends(get_db)):
@@ -218,18 +251,29 @@ def request_user_signup_otp(signup: SignUp, db: Session = Depends(get_db)):
     
     return {'message': 'OTP sent successfully. Please verify to complete signup.', 'identifier': identifier}
 
+def citizen_to_dict(citizen: Citizen):
+    return {
+        "name": citizen.name,
+        "email": citizen.email,
+        "aadhar": citizen.aadhar,
+        "house_number": citizen.house_number,
+        "ward_number": citizen.ward_number,
+        "area": citizen.area,
+        "pincode": citizen.pincode,
+        "phone_number": citizen.phone_number
+    }
+
+
 @app.post('/user/verify-signup-otp')
 def verify_user_signup_otp(otp_verification: OTP_verification, db: Session = Depends(get_db)):
-    """Verifies OTP and completes user signup."""
     stored_otp_data = otp_store.get(otp_verification.identifier)
     
     if not stored_otp_data or stored_otp_data['otp'] != otp_verification.otp:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect OTP or no OTP requested.')
-
     if datetime.utcnow() > stored_otp_data['expires_at']:
         del otp_store[otp_verification.identifier]
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='OTP has expired. Please request a new one.')
-    
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='OTP has expired.')
+
     user_data = stored_otp_data['user_data']
     hashed_password = hash_password(user_data['password'])
 
@@ -246,15 +290,16 @@ def verify_user_signup_otp(otp_verification: OTP_verification, db: Session = Dep
     )
     db.add(new_citizen)
     db.commit()
+    db.refresh(new_citizen)
 
-    # Update signup activity status
     signup_activity = db.query(UserSignupActivity).filter(UserSignupActivity.email == user_data['email']).order_by(UserSignupActivity.timestamp.desc()).first()
     if signup_activity:
         signup_activity.status = "completed"
         db.commit()
 
     del otp_store[otp_verification.identifier]
-    return {"message": "User created successfully",'user' : new_citizen }
+
+    return {"message": "User created successfully", "user": citizen_to_dict(new_citizen)}
 
 @app.post('/login')
 def citizen_login(citizen_login: Citizin_login, db: Session = Depends(get_db)):

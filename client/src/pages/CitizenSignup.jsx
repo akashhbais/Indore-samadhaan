@@ -39,7 +39,7 @@ const CitizenSignup = () => {
         email: form.email,
         aadhar: form.aadhar,
         house_number: form.house_number,
-        ward_number: parseInt(form.ward_number),
+        ward_number: (form.ward_number),
         area: form.area,
         pincode: parseInt(form.pincode),
         phone_number: parseInt(form.phone_number),
@@ -80,10 +80,10 @@ const CitizenSignup = () => {
       console.log(response);
       console.log(response.data);
       const data = response.data;
-      if (data) {
+      if (data.user) {
         setIsUser(true);
-        setUser(data.data);
-        localStorage.setItem("user", JSON.stringify(data.data));
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
         navigate('/citizen');
         console.log("OTP verified:", data);
       } else {
